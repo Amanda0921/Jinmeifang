@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>金魅芳库存管理</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --dark-color: #34495e;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .search-box {
+            display: flex;
+            gap: 10px;
+            flex-grow: 1;
+            max-width: 500px;
+        }
+        
+        .search-box input {
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            flex-grow: 1;
+            min-width: 150px;
+        }
+        
+        .search-box button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            white-space: nowrap;
+        }
+        
+        .search-box button:hover {
+            background-color: #2980b9;
+        }
+        
+        .main-content {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .add-form {
+            flex: 1;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px 0 4px 6px rgba(0, 0, 0, 0.05);
+            height: fit-content;
+        }
+        
+        .inventory-section {
+            flex: 3;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 5px;
+        }
+        
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--secondary-color);
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--light-color);
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        input:invalid {
+            border-color: var(--danger-color);
+        }
+        
+        button {
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+        
+        .btn-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #27ae60;
+        }
+        
+        .btn-warning {
+            background-color: var(--warning-color);
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            background-color: #e67e22;
+        }
+        
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+        
+        .btn-info {
+            background-color: var(--light-color);
+            color: var(--dark-color);
+        }
+        
+        .btn-info:hover {
+            background-color: #d5dbdb;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background-color: var(--light-color);
+            font-weight: 600;
+            position: relative;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        th.sortable:hover {
+            background-color: #d5dbdb;
+        }
+        
+        th.sorted-asc::after {
+            content: " ↑";
+        }
+        
+        th.sorted-desc::after {
+            content: " ↓";
+        }
+        
+        tr:hover {
+            background-color: rgba(52, 152, 219, 0.05);
+        }
+        
+        .actions {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+        
+        .action-btn {
+            padding: 5px 10px;
+            font-size: 0.9rem;
+        }
+        
+        .stats {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 10px;
+            min-width: 120px;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--dark-color);
+        }
+        
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .export-btn {
+            background-color: var(--success-color);
+            color: white;
+        }
+        
+        .export-btn:hover {
+            background-color: #27ae60;
+        }
+        
+        footer {
+            margin-top: 30px;
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        
+        .low-stock {
+            background-color: rgba(231, 76, 60, 0.1) !important;
+        }
+        
+        .no-stock {
+            background-color: rgba(231, 76, 60, 0.2) !important;
+            color: #c0392b;
+            font-weight: bold;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 4px;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            opacity: 0;
+            transform: translateX(100px);
+            transition: all 0.3s ease;
+            max-width: 300px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .notification.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            background-color: var(--success-color);
+        }
+        
+        .notification.error {
+            background-color: var(--danger-color);
+        }
+        
+        .notification.warning {
+            background-color: var(--warning-color);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
+            color: var(--secondary-color);
+}
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #7f8c8d;
+        }
+        
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .search-box {
+                width: 100%;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .actions {
+                flex-direction: column;
+            }
+            
+            .action-btn {
+                width: 100%;
+            }
+            
+            th, td {
+                padding: 8px 10px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div>
+                    <h1>金魅芳库存管理</h1>
+                    <p>高效管理您的库存</p>
+                </div>
+                <div class="search-box">
+                    <input type="text" id="search-input" placeholder="搜索鞋子名称、颜色或尺码...">
+                    <button id="search-btn" class="btn btn-primary">搜索</button>
+                </div>
+            </div>
+        </header>
+        
+        <div class="main-content">
+            <section class="add-form">
+                <h2>添加新鞋</h2>
+                <form id="add-shoe-form">
+                    <div class="form-group">
+                        <label for="shoe-name">鞋子名称</label>
+                        <input type="text" id="shoe-name" required minlength="2" maxlength="50">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="shoe-color">颜色</label>
+                        <input type="text" id="shoe-color" required minlength="2" maxlength="20">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="shoe-size">尺码</label>
+                        <select id="shoe-size" required>
+                            <option value="">选择尺码</option>
+                            <option value="38">38</option>
+                            <option value="39">39</option>
+                            <option value="40">40</option>
+                            <option value="41">41</option>
+                            <option value="42">42</option>
+                            <option value="43">43</option>
+                            <option value="44">44</option>
+                            <option value="45">45</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="shoe-quantity">库存数量</label>
+                        <input type="number" id="shoe-quantity" min="0" max="9999" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="shoe-price">价格 (¥)</label>
+                        <input type="number" id="shoe-price" min="0" step="0.01" max="99999" required>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-success" style="width: 100%; padding: 12px;">添加到库存</button>
+                </form>
+            </section>
+            
+            <section class="inventory-section">
+                <div class="toolbar">
+                    <h2>库存概览</h2>
+                    <button id="export-btn" class="btn export-btn">导出数据</button>
+                </div>
+                
+                <div id="inventory-table-container">
+                    <table id="inventory-table">
+                        <thead>
+                            <tr>
+                                <th class="sortable" data-sort="name">名称</th>
+                                <th class="sortable" data-sort="color">颜色</th>
+                                <th class="sortable" data-sort="size">尺码</th>
+                                <th class="sortable" data-sort="quantity">数量</th>
+                                <th class="sortable" data-sort="price">价格</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventory-body">
+                            <!-- 库存数据将通过JS动态添加 -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-value" id="total-items">0</div>
+                        <div class="stat-label">总款数</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="total-stock">0</div>
+                        <div class="stat-label">总库存</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="low-stock">0</div>
+                        <div class="stat-label">低库存</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="total-value">¥0</div>
+                        <div class="stat-label">总价值</div>
+                    </div>
+                </div>
+            </section>
+        </div>
+        
+        <footer>
+            <p>金魅芳库存管理系统 © 2023</p>
+        </footer>
+    </div>
+    
+    <!-- 编辑模态框 -->
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">编辑鞋子信息</h3>
+                <button class="close-btn">&times;</button>
+            </div>
+            <form id="edit-shoe-form">
+                <input type="hidden" id="edit-shoe-id">
+                <div class="form-group">
+                    <label for="edit-shoe-name">鞋子名称</label>
+                    <input type="text" id="edit-shoe-name" required minlength="2" maxlength="50">
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit-shoe-color">颜色</label>
+                    <input type="text" id="edit-shoe-color" required minlength="2" maxlength="20">
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit-shoe-size">尺码</label>
+                    <select id="edit-shoe-size" required>
+                        <option value="38">38</option>
+                        <option value="39">39</option>
+                        <option value="40">40</option>
+                        <option value="41">41</option>
+                        <option value="42">42</option>
+                        <option value="43">43</option>
+                        <option value="44">44</option>
+                        <option value="45">45</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit-shoe-quantity">库存数量</label>
+                    <input type="number" id="edit-shoe-quantity" min="0" max="9999" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit-shoe-price">价格 (¥)</label>
+                    <input type="number" id="edit-shoe-price" min="0" step="0.01" max="99999" required>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" id="cancel-edit" class="btn btn-info">取消</button>
+                    <button type="submit" class="btn btn-success">保存更改</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div id="notification" class="notification"></div>
+    
+    <script>
+        // 初始化库存数据
+        let inventory = JSON.parse(localStorage.getItem('shoeInventory')) || [];
+        let currentSort = { column: null, direction: 'asc' };
+        
+        // DOM元素
+        const addShoeForm = document.getElementById('add-shoe-form');
+        const editShoeForm = document.getElementById('edit-shoe-form');
+        const inventoryBody = document.getElementById('inventory-body');
+        const searchInput = document.getElementById('search-input');
+        const searchBtn = document.getElementById('search-btn');
+        const exportBtn = document.getElementById('export-btn');
+        const notification = document.getElementById('notification');
+        const editModal = document.getElementById('edit-modal');
+        const closeModalBtn = document.querySelector('.close-btn');
+        const cancelEditBtn = document.getElementById('cancel-edit');
+        
+        // 统计元素
+        const totalItemsEl = document.getElementById('total-items');
+        const totalStockEl = document.getElementById('total-stock');
+        const lowStockEl = document.getElementById('low-stock');
+        const totalValueEl = document.getElementById('total-value');
+        
+        // 排序表头
+        const sortableHeaders = document.querySelectorAll('.sortable');
+        
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', function() {
+            renderInventory();
+            updateStats();
+            
+            // 初始化一些示例数据
+            if (inventory.length === 0) {
+                inventory = [
+                    {id: "1", name: "高跟鞋", color: "黑色", size: 38, quantity: 15, price: 299},
+                    {id: "2", name: "休闲鞋", color: "白色", size: 39, quantity: 8, price: 199},
+                    {id: "3", name: "运动鞋", color: "红色", size: 40, quantity: 5, price: 399},
+                    {id: "4", name: "凉鞋", color: "蓝色", size: 41, quantity: 3, price: 159},
+                    {id: "5", name: "靴子", color: "棕色", size: 42, quantity: 0, price: 599}
+                ];
+                saveInventory();
+                renderInventory();
+                updateStats();
+            }
+        });
+        
+        // 添加新鞋
+        addShoeForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const newShoe = {
+                id: Date.now().toString(),
+                name: document.getElementById('shoe-name').value.trim(),
+                color: document.getElementById('shoe-color').value.trim(),
+                size: document.getElementById('shoe-size').value,
+                quantity: parseInt(document.getElementById('shoe-quantity').value),
+                price: parseFloat(document.getElementById('shoe-price').value)
+            };
+            
+            // 检查是否已存在相同名称、颜色和尺码的鞋子
+            const exists = inventory.some(shoe => 
+                shoe.name.toLowerCase() === newShoe.name.toLowerCase() && 
+                shoe.color.toLowerCase() === newShoe.color.toLowerCase() && 
+                shoe.size === newShoe.size
+            );
+            
+            if (exists) {
+                showNotification('已存在相同规格的鞋子，请直接修改数量', 'warning');
+                return;
+            }
+            
+            inventory.push(newShoe);
+            saveInventory();
+            renderInventory();
+            updateStats();
+            showNotification('鞋子已成功添加到库存！', 'success');
+            
+            // 重置表单
+            addShoeForm.reset();
+        });
+        
+        // 搜索功能
+        searchBtn.addEventListener('click', function() {
+            renderInventory();
+        });
+        
+        searchInput.addEventListener('keyup', function(e) {
+            if (e.key === 'Enter') {
+                renderInventory();
+            }
+        });
+        
+        // 导出数据
+        exportBtn.addEventListener('click', function() {
+            exportInventory();
+        });
+        
+        // 排序功能
+        sortableHeaders.forEach(header => {
+            header.addEventListener('click', function() {
+                const column = this.getAttribute('data-sort');
+                
+                if (currentSort.column === column) {
+                    currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+                } else {
+                    currentSort.column = column;
+                    currentSort.direction = 'asc';
+                }
+                
+                // 更新排序指示器
+                sortableHeaders.forEach(h => {
+                    h.classList.remove('sorted-asc', 'sorted-desc');
+                });
+                
+                this.classList.add(`sorted-${currentSort.direction}`);
+                
+                renderInventory();
+            });
+        });
+        
+        // 关闭模态框
+        closeModalBtn.addEventListener('click', function() {
+            editModal.style.display = 'none';
+        });
+        
+        cancelEditBtn.addEventListener('click', function() {
+            editModal.style.display = 'none';
+        });
+        
+        // 点击模态框外部关闭
+        window.addEventListener('click', function(e) {
+            if (e.target === editModal) {
+                editModal.style.display = 'none';
+            }
+        });
+        
+        // 编辑表单提交
+        editShoeForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const id = document.getElementById('edit-shoe-id').value;
+            const shoe = inventory.find(item => item.id === id);
+            
+            if (shoe) {
+                shoe.name = document.getElementById('edit-shoe-name').value.trim();
+                shoe.color = document.getElementById('edit-shoe-color').value.trim();
+                shoe.size = document.getElementById('edit-shoe-size').value;
+                shoe.quantity = parseInt(document.getElementById('edit-shoe-quantity').value);
+                shoe.price = parseFloat(document.getElementById('edit-shoe-price').value);
+                
+                saveInventory();
+                renderInventory();
+                updateStats();
+                editModal.style.display = 'none';
+                showNotification('鞋子信息已更新！', 'success');
+            }
+        });
+        
+        // 渲染库存表格
+        function renderInventory() {
+            const searchTerm = searchInput.value.toLowerCase();
+            
+            let filteredInventory = inventory.filter(shoe => {
+                return (
+                    shoe.name.toLowerCase().includes(searchTerm) ||
+                    shoe.color.toLowerCase().includes(searchTerm) ||
+                    shoe.size.toString().includes(searchTerm)
+                );
+            });
+            
+            // 排序
+            if (currentSort.column) {
+                filteredInventory.sort((a, b) => {
+                    let valueA = a[currentSort.column];
+                    let valueB = b[currentSort.column];
+                    
+                    // 处理数字和字符串排序
+                    if (typeof valueA === 'number' && typeof valueB === 'number') {
+                        return currentSort.direction === 'asc' ? valueA - valueB : valueB - valueA;
+                    } else {
+                        valueA = String(valueA).toLowerCase();
+                        valueB = String(valueB).toLowerCase();
+                        return currentSort.direction === 'asc' 
+                            ? valueA.localeCompare(valueB) 
+                            : valueB.localeCompare(valueA);
+                    }
+                });
+            }
+            
+            inventoryBody.innerHTML = '';
+            
+            if (filteredInventory.length === 0) {
+                inventoryBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 30px;">
+                            没有找到匹配的鞋子库存记录
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            filteredInventory.forEach(shoe => {
+                const row = document.createElement('tr');
+                
+                // 低库存/无库存样式
+                if (shoe.quantity === 0) {
+                    row.classList.add('no-stock');
+                } else if (shoe.quantity <= 5) {
+                    row.classList.add('low-stock');
+                }
+                
+                row.innerHTML = `
+                    <td>${shoe.name}</td>
+                    <td>${shoe.color}</td>
+                    <td>${shoe.size}</td>
+                    <td>${shoe.quantity}</td>
+                    <td>¥${shoe.price.toFixed(2)}</td>
+                    <td class="actions">
+                        <button class="btn btn-warning action-btn edit-btn" data-id="${shoe.id}">编辑</button>
+                        <button class="btn btn-danger action-btn delete-btn" data-id="${shoe.id}">删除</button>
+                    </td>
+                `;
+                
+                inventoryBody.appendChild(row);
+            });
+            
+            // 添加事件监听器
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    openEditModal(id);
+                });
+            });
+            
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    deleteShoe(id);
+                });
+            });
+        }
+        
+        // 打开编辑模态框
+        function openEditModal(id) {
+            const shoe = inventory.find(item => item.id === id);
+            
+            if (shoe) {
+                document.getElementById('edit-shoe-id').value = shoe.id;
+                document.getElementById('edit-shoe-name').value = shoe.name;
+                document.getElementById('edit-shoe-color').value = shoe.color;
+                document.getElementById('edit-shoe-size').value = shoe.size;
+                document.getElementById('edit-shoe-quantity').value = shoe.quantity;
+                document.getElementById('edit-shoe-price').value = shoe.price;
+                
+                editModal.style.display = 'flex';
+            }
+        }
+        
+        // 删除鞋子
+        function deleteShoe(id) {
+            if (confirm('确定要删除这条库存记录吗？此操作不可撤销。')) {
+                inventory = inventory.filter(item => item.id !== id);
+                saveInventory();
+                renderInventory();
+                updateStats();
+                showNotification('库存记录已删除！', 'success');
+            }
+        }
+        
+        // 更新统计信息
+        function updateStats() {
+            totalItemsEl.textContent = inventory.length;
+            
+            const totalStock = inventory.reduce((sum, shoe) => sum + shoe.quantity, 0);
+            totalStockEl.textContent = totalStock;
+            
+            const lowStockCount = inventory.filter(shoe => shoe.quantity <= 5 && shoe.quantity > 0).length;
+            lowStockEl.textContent = lowStockCount;
+            
+            const totalValue = inventory.reduce((sum, shoe) => sum + (shoe.quantity * shoe.price), 0);
+            totalValueEl.textContent = `¥${totalValue.toFixed(2)}`;
+        }
+        
+        // 保存库存数据到localStorage
+        function saveInventory() {
+            localStorage.setItem('shoeInventory', JSON.stringify(inventory));
+        }
+        
+        // 导出库存数据
+        function exportInventory() {
+            const data = JSON.stringify(inventory, null, 2);
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `金魅芳库存_${new Date().toISOString().slice(0, 10)}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showNotification('库存数据已导出！', 'success');
+        }
+        
+        // 显示通知
+        function showNotification(message, type) {
+            notification.textContent = message;
+            notification.className = `notification ${type} show`;
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
